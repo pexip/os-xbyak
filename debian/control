@@ -1,0 +1,25 @@
+Source: xbyak
+Section: libs
+Priority: optional
+Maintainer: Pexip AS <packaging@pexip.com>
+Standards-Version: 4.3.0
+Build-Depends:
+ cmake (>= 3.13),
+ debhelper (>> 10~),
+Homepage: https://github.com/herumi/xbyak
+Vcs-Browser: https://github.com/herumi/xbyak
+Vcs-Git: https://github.com/herumi/xbyak.git
+Description: JIT assembler for x86(IA32), x64(AMD64, x86-64) by C++
+ Xbyak is a C++ header library that enables dynamically to assemble x86(IA32),
+ x64(AMD64, x86-64) mnemonic.
+
+Package: xbyak-dev
+Architecture: any
+Multi-Arch: same
+Section: libdevel
+Depends: ${misc:Depends}
+Description: ${source:Synopsis} (development files)
+ ${source:Extended-Description}
+ .
+ This package contains header files and other data necessary for
+ developing with xbyak.

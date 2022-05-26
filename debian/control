@@ -1,0 +1,27 @@
+Source: xbyak
+Section: libdevel
+Priority: optional
+Maintainer: Andrea Pappacoda <andrea@pappacoda.it>
+Build-Depends: debhelper-compat (= 13),
+               meson (>= 0.50),
+               cmake
+Build-Depends-Arch: g++-multilib <!nocheck>,
+                    libboost-dev <!nocheck>,
+                    nasm <!nocheck>,
+                    yasm <!nocheck>
+Standards-Version: 4.6.0
+Homepage: https://github.com/herumi/xbyak
+Rules-Requires-Root: no
+Vcs-Git: https://salsa.debian.org/debian/xbyak.git
+Vcs-Browser: https://salsa.debian.org/debian/xbyak
+
+Package: libxbyak-dev
+Architecture: any-amd64 any-i386
+Depends: ${misc:Depends}
+Description: JIT assembler for x86(IA32), x64(AMD64, x86-64)
+ Xbyak is a C++ header library that enables dynamically to assemble
+ x86(IA32), x64(AMD64, x86-64) mnemonic.
+ .
+ The library supports any compiler supporting C++03 or later.
+ .
+ This package contains the development headers.

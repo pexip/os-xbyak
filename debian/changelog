@@ -1,0 +1,50 @@
+xbyak (6.052-1) unstable; urgency=medium
+
+  * New upstream version 6.052
+  * d/upstream/metadata: update paths
+
+ -- Andrea Pappacoda <andrea@pappacoda.it>  Thu, 26 May 2022 13:22:26 +0200
+
+xbyak (6.04-1) unstable; urgency=medium
+
+  * New upstream version 6.04
+  * d/patches: drop upstreamed patches
+
+ -- Andrea Pappacoda <andrea@pappacoda.it>  Mon, 18 Apr 2022 21:02:22 +0200
+
+xbyak (6.03-1) unstable; urgency=medium
+
+  * New upstream version 6.03
+  * d/{control,rules}: build examples and run tests
+  * d/tests: add autopkgtests
+
+ -- Andrea Pappacoda <andrea@pappacoda.it>  Sun, 13 Mar 2022 00:48:30 +0100
+
+xbyak (6.02-1) unstable; urgency=medium
+
+  * New upstream version 6.02
+
+ -- Andrea Pappacoda <andrea@pappacoda.it>  Sun, 13 Feb 2022 22:40:01 +0100
+
+xbyak (6.01-1) unstable; urgency=medium
+
+  * New upstream version 6.01
+  * d/control: add Vcs fields
+  * d/patches: drop upstreamed patches
+
+ -- Andrea Pappacoda <andrea@pappacoda.it>  Wed, 12 Jan 2022 23:11:02 +0100
+
+xbyak (6.00-2) unstable; urgency=medium
+
+  * Backport b29e471 (CMake Config file include path fix)
+  * d/control: remove Vcs-* fields, as no vcs is used
+  * d/upstream/metadata: update Documentation and Changelog fields
+  * d/watch: use /tags instead of /releases
+
+ -- Andrea Pappacoda <andrea@pappacoda.it>  Sat, 20 Nov 2021 22:04:30 +0100
+
+xbyak (6.00-1) unstable; urgency=low
+
+  * Initial release. Closes: #995760
+
+ -- Andrea Pappacoda <andrea@pappacoda.it>  Tue, 05 Oct 2021 10:29:03 +0200

@@ -12,6 +12,7 @@ Vcs-Git: https://github.com/herumi/xbyak.git
 Description: JIT assembler for x86(IA32), x64(AMD64, x86-64) by C++
  Xbyak is a C++ header library that enables dynamically to assemble x86(IA32),
  x64(AMD64, x86-64) mnemonic.
+XS-Pexip-Upstream: http://ftp.debian.org/debian/ bookworm
 
 Package: xbyak-dev
 Architecture: any

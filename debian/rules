@@ -1,26 +1,35 @@
 #!/usr/bin/make -f
 
-include /usr/share/dpkg/architecture.mk
-
-DOT_IN_FILES :=
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all qa=+all
+# -Werror=array-bounds: added by qa=+bug, triggers some false positives
+export DEB_CXXFLAGS_MAINT_STRIP = -Werror=array-bounds
 
 %:
-	dh $@ --buildsystem=cmake
+	dh $@ --buildsystem=meson
 
-CONFFLAGS := \
-	-DCMAKE_BUILD_TYPE=Release
+ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
 
-override_dh_auto_configure:
-	dh_auto_configure -- $(CONFFLAGS)
+ifeq ($(shell dpkg --print-architecture), i386)
+  bits := 32
+else
+  bits := 64
+endif
+
+override_dh_auto_build-arch:
+	dh_auto_build
+	make -C sample BIT=$(bits)
+	make -C test BIT=$(bits)
+
+override_dh_auto_test:
+	dh_auto_test
+	uname -m
+	dpkg --print-architecture
+	make -C test BIT=$(bits) test
 
 override_dh_auto_clean:
 	dh_auto_clean
-	for file in $(DOT_IN_FILES); do rm -f debian/$${file}; done
+	make -C sample BIT=$(bits) clean
+	make -C test BIT=$(bits) clean
+	$(RM) gen/gen_avx512 gen/gen_code gen/sortline
 
-override_dh_auto_install:
-	dh_auto_install
-	for file in $(DOT_IN_FILES); \
-	do \
-	  sed -e "s|\$${DEB_HOST_MULTIARCH}|$(DEB_HOST_MULTIARCH)|g" \
-	  <debian/$${file}.in >debian/$${file}; \
-	done
+endif

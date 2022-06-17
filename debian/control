@@ -1,26 +1,29 @@
 Source: xbyak
-Section: libs
+Section: libdevel
 Priority: optional
 Maintainer: Pexip AS <packaging@pexip.com>
-Standards-Version: 4.3.0
-Build-Depends:
- cmake (>= 3.13),
- debhelper (>> 10~),
+XSBC-Pexip-Original-Maintainer: Andrea Pappacoda <andrea@pappacoda.it>
+Build-Depends: debhelper-compat (= 13),
+               meson (>= 0.50),
+               cmake
+Build-Depends-Arch: g++-multilib <!nocheck>,
+                    libboost-dev <!nocheck>,
+                    nasm <!nocheck>,
+                    yasm <!nocheck>
+Standards-Version: 4.6.0
 Homepage: https://github.com/herumi/xbyak
-Vcs-Browser: https://github.com/herumi/xbyak
-Vcs-Git: https://github.com/herumi/xbyak.git
-Description: JIT assembler for x86(IA32), x64(AMD64, x86-64) by C++
- Xbyak is a C++ header library that enables dynamically to assemble x86(IA32),
- x64(AMD64, x86-64) mnemonic.
+Rules-Requires-Root: no
+Vcs-Git: https://salsa.debian.org/debian/xbyak.git
+Vcs-Browser: https://salsa.debian.org/debian/xbyak
 XS-Pexip-Upstream: http://ftp.debian.org/debian/ bookworm
 
-Package: xbyak-dev
-Architecture: any
-Multi-Arch: same
-Section: libdevel
+Package: libxbyak-dev
+Architecture: any-amd64 any-i386
 Depends: ${misc:Depends}
-Description: ${source:Synopsis} (development files)
- ${source:Extended-Description}
+Description: JIT assembler for x86(IA32), x64(AMD64, x86-64)
+ Xbyak is a C++ header library that enables dynamically to assemble
+ x86(IA32), x64(AMD64, x86-64) mnemonic.
  .
- This package contains header files and other data necessary for
- developing with xbyak.
+ The library supports any compiler supporting C++03 or later.
+ .
+ This package contains the development headers.

@@ -1,3 +1,9 @@
+xbyak (6.052-1pexip2) pexip-bullseye; urgency=medium
+
+  * Main bullseye build
+
+ -- Mark Hymers <mark.hymers@pexip.com>  Fri, 24 Jun 2022 14:05:02 +0100
+
 xbyak (6.052-1pexip1) pexip-bullseye; urgency=medium
 
   * Initial bullseye version.

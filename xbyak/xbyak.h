@@ -77,7 +77,11 @@
 	#endif
 	#include <windows.h>
 	#include <malloc.h>
-	#define XBYAK_TLS __declspec(thread)
+	#ifdef _MSC_VER
+		#define XBYAK_TLS __declspec(thread)
+	#else
+		#define XBYAK_TLS __thread
+	#endif
 #elif defined(__GNUC__)
 	#include <unistd.h>
 	#include <sys/mman.h>
@@ -114,7 +118,7 @@
 	#endif
 #endif
 
-#if (__cplusplus >= 201103) || (defined(_MSC_VER) && _MSC_VER >= 1800)
+#if (__cplusplus >= 201103) || (defined(_MSC_VER) && _MSC_VER >= 1900)
 	#undef XBYAK_TLS
 	#define XBYAK_TLS thread_local
 	#define XBYAK_VARIADIC_TEMPLATE
@@ -140,11 +144,18 @@
 	#pragma warning(disable : 4127) /* constant expresison */
 #endif
 
+// disable -Warray-bounds because it may be a bug of gcc. https://gcc.gnu.org/bugzilla/show_bug.cgi?id=104603
+#if defined(__GNUC__) && !defined(__clang__)
+	#define XBYAK_DISABLE_WARNING_ARRAY_BOUNDS
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Warray-bounds"
+#endif
+
 namespace Xbyak {
 
 enum {
 	DEFAULT_MAX_CODE_SIZE = 4096,
-	VERSION = 0x6052 /* 0xABCD = A.BC(D) */
+	VERSION = 0x6680 /* 0xABCD = A.BC(.D) */
 };
 
 #ifndef MIE_INTEGER_TYPE_DEFINED
@@ -367,7 +378,7 @@ inline bool IsInInt32(uint64_t x) { return ~uint64_t(0x7fffffffu) <= x || x <= 0
 
 inline uint32_t VerifyInInt32(uint64_t x)
 {
-#ifdef XBYAK64
+#if defined(XBYAK64) && !defined(__ILP32__)
 	if (!IsInInt32(x)) XBYAK_THROW_RET(ERR_OFFSET_IS_TOO_BIG, 0)
 #endif
 	return static_cast<uint32_t>(x);
@@ -418,9 +429,18 @@ inline int getMacOsVersion()
 } // util
 #endif
 class MmapAllocator : public Allocator {
+	struct Allocation {
+		size_t size;
+#if defined(XBYAK_USE_MEMFD)
+		// fd_ is only used with XBYAK_USE_MEMFD. We keep the file open
+		// during the lifetime of each allocation in order to support
+		// checkpoint/restore by unprivileged users.
+		int fd;
+#endif
+	};
 	const std::string name_; // only used with XBYAK_USE_MEMFD
-	typedef XBYAK_STD_UNORDERED_MAP<uintptr_t, size_t> SizeList;
-	SizeList sizeList_;
+	typedef XBYAK_STD_UNORDERED_MAP<uintptr_t, Allocation> AllocationList;
+	AllocationList allocList_;
 public:
 	explicit MmapAllocator(const std::string& name = "xbyak") : name_(name) {}
 	uint8_t *alloc(size_t size)
@@ -443,25 +463,35 @@ public:
 		fd = memfd_create(name_.c_str(), MFD_CLOEXEC);
 		if (fd != -1) {
 			mode = MAP_SHARED;
-			if (ftruncate(fd, size) != 0) XBYAK_THROW_RET(ERR_CANT_ALLOC, 0)
+			if (ftruncate(fd, size) != 0) {
+				close(fd);
+				XBYAK_THROW_RET(ERR_CANT_ALLOC, 0)
+			}
 		}
 #endif
 		void *p = mmap(NULL, size, PROT_READ | PROT_WRITE, mode, fd, 0);
-#if defined(XBYAK_USE_MEMFD)
-		if (fd != -1) close(fd);
-#endif
-		if (p == MAP_FAILED) XBYAK_THROW_RET(ERR_CANT_ALLOC, 0)
+		if (p == MAP_FAILED) {
+			if (fd != -1) close(fd);
+			XBYAK_THROW_RET(ERR_CANT_ALLOC, 0)
+		}
 		assert(p);
-		sizeList_[(uintptr_t)p] = size;
+		Allocation &alloc = allocList_[(uintptr_t)p];
+		alloc.size = size;
+#if defined(XBYAK_USE_MEMFD)
+		alloc.fd = fd;
+#endif
 		return (uint8_t*)p;
 	}
 	void free(uint8_t *p)
 	{
 		if (p == 0) return;
-		SizeList::iterator i = sizeList_.find((uintptr_t)p);
-		if (i == sizeList_.end()) XBYAK_THROW(ERR_BAD_PARAMETER)
-		if (munmap((void*)i->first, i->second) < 0) XBYAK_THROW(ERR_MUNMAP)
-		sizeList_.erase(i);
+		AllocationList::iterator i = allocList_.find((uintptr_t)p);
+		if (i == allocList_.end()) XBYAK_THROW(ERR_BAD_PARAMETER)
+		if (munmap((void*)i->first, i->second.size) < 0) XBYAK_THROW(ERR_MUNMAP)
+#if defined(XBYAK_USE_MEMFD)
+		if (i->second.fd != -1) close(i->second.fd);
+#endif
+		allocList_.erase(i);
 	}
 };
 #else
@@ -1455,7 +1485,6 @@ public:
 		clabelDefList_.clear();
 		clabelUndefList_.clear();
 		resetLabelPtrList();
-		ClearError();
 	}
 	void enterLocal()
 	{
@@ -1797,7 +1826,7 @@ private:
 	void setSIB(const RegExp& e, int reg, int disp8N = 0)
 	{
 		uint64_t disp64 = e.getDisp();
-#ifdef XBYAK64
+#if defined(XBYAK64) && !defined(__ILP32__)
 #ifdef XBYAK_OLD_DISP_CHECK
 		// treat 0xffffffff as 0xffffffffffffffff
 		uint64_t high = disp64 >> 32;
@@ -2168,9 +2197,6 @@ private:
 	{
 		if (op.isBit(32)) XBYAK_THROW(ERR_BAD_COMBINATION)
 		int w = op.isBit(16);
-#ifdef XBYAK64
-		if (op.isHigh8bit()) XBYAK_THROW(ERR_BAD_COMBINATION)
-#endif
 		bool cond = reg.isREG() && (reg.getBit() > op.getBit());
 		opModRM(reg, op, cond && op.isREG(), cond && op.isMEM(), 0x0F, code | w);
 	}
@@ -2392,18 +2418,21 @@ private:
 		if (addr.getRegExp().getIndex().getKind() != kind) XBYAK_THROW(ERR_BAD_VSIB_ADDRESSING)
 		opVex(x, 0, addr, type, code);
 	}
-	void opVnni(const Xmm& x1, const Xmm& x2, const Operand& op, int type, int code0, PreferredEncoding encoding)
+	void opEncoding(const Xmm& x1, const Xmm& x2, const Operand& op, int type, int code0, PreferredEncoding encoding)
 	{
+		opAVX_X_X_XM(x1, x2, op, type | orEvexIf(encoding), code0);
+	}
+	int orEvexIf(PreferredEncoding encoding) {
 		if (encoding == DefaultEncoding) {
-			encoding = EvexEncoding;
+			encoding = defaultEncoding_;
 		}
 		if (encoding == EvexEncoding) {
 #ifdef XBYAK_DISABLE_AVX512
 			XBYAK_THROW(ERR_EVEX_IS_INVALID)
 #endif
-			type |= T_MUST_EVEX;
+			return T_MUST_EVEX;
 		}
-		opAVX_X_X_XM(x1, x2, op, type, code0);
+		return 0;
 	}
 	void opInOut(const Reg& a, const Reg& d, uint8_t code)
 	{
@@ -2488,6 +2517,7 @@ public:
 #endif
 private:
 	bool isDefaultJmpNEAR_;
+	PreferredEncoding defaultEncoding_;
 public:
 	void L(const std::string& label) { labelMgr_.defineSlabel(label); }
 	void L(Label& label) { labelMgr_.defineClabel(label); }
@@ -2767,11 +2797,13 @@ public:
 		, es(Segment::es), cs(Segment::cs), ss(Segment::ss), ds(Segment::ds), fs(Segment::fs), gs(Segment::gs)
 #endif
 		, isDefaultJmpNEAR_(false)
+		, defaultEncoding_(EvexEncoding)
 	{
 		labelMgr_.set(this);
 	}
 	void reset()
 	{
+		ClearError();
 		resetSize();
 		labelMgr_.reset();
 		labelMgr_.set(this);
@@ -2802,6 +2834,9 @@ public:
 #ifdef XBYAK_UNDEF_JNL
 	#undef jnl
 #endif
+
+	// set default encoding to select Vex or Evex
+	void setDefaultEncoding(PreferredEncoding encoding) { defaultEncoding_ = encoding; }
 
 	/*
 		use single byte nop if useMultiByteNop = false
@@ -2905,6 +2940,10 @@ static const XBYAK_CONSTEXPR Segment es(Segment::es), cs(Segment::cs), ss(Segmen
 
 #ifdef _MSC_VER
 	#pragma warning(pop)
+#endif
+
+#if defined(__GNUC__) && !defined(__clang__)
+	#pragma GCC diagnostic pop
 #endif
 
 } // end of namespace

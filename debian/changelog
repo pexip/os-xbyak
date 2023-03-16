@@ -1,3 +1,9 @@
+xbyak (6.68-1pexip1) pexip; urgency=medium
+
+  * new upstream release
+
+ -- Huw Jones <huw@pexip.com>  Thu, 16 Mar 2023 13:28:33 +0000
+
 xbyak (6.68-1) unstable; urgency=medium
 
   * New upstream version 6.68

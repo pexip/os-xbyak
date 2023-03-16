@@ -9,27 +9,16 @@ export DEB_CXXFLAGS_MAINT_STRIP = -Werror=array-bounds
 
 ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
 
-ifeq ($(shell dpkg --print-architecture), i386)
-  bits := 32
-else
-  bits := 64
-endif
+execute_after_dh_auto_build-arch:
+	make -C sample BIT=$(DEB_HOST_ARCH_BITS)
+	make -C test BIT=$(DEB_HOST_ARCH_BITS)
 
-override_dh_auto_build-arch:
-	dh_auto_build
-	make -C sample BIT=$(bits)
-	make -C test BIT=$(bits)
+execute_after_dh_auto_test:
+	make -C test BIT=$(DEB_HOST_ARCH_BITS) test
 
-override_dh_auto_test:
-	dh_auto_test
-	uname -m
-	dpkg --print-architecture
-	make -C test BIT=$(bits) test
-
-override_dh_auto_clean:
-	dh_auto_clean
-	make -C sample BIT=$(bits) clean
-	make -C test BIT=$(bits) clean
+execute_after_dh_auto_clean:
+	make -C sample BIT=$(DEB_HOST_ARCH_BITS) clean
+	make -C test BIT=$(DEB_HOST_ARCH_BITS) clean
 	$(RM) gen/gen_avx512 gen/gen_code gen/sortline
 
 endif

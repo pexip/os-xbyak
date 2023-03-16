@@ -1,3 +1,66 @@
+xbyak (6.68-1) unstable; urgency=medium
+
+  * New upstream version 6.68
+
+ -- Andrea Pappacoda <andrea@pappacoda.it>  Wed, 14 Dec 2022 18:24:27 +0100
+
+xbyak (6.67-1) unstable; urgency=medium
+
+  * New upstream version 6.67
+
+ -- Andrea Pappacoda <andrea@pappacoda.it>  Thu, 01 Dec 2022 20:04:53 +0100
+
+xbyak (6.66-1) unstable; urgency=medium
+
+  * New upstream version 6.66
+
+ -- Andrea Pappacoda <andrea@pappacoda.it>  Mon, 28 Nov 2022 15:24:52 +0100
+
+xbyak (6.65-1) unstable; urgency=medium
+
+  * New upstream version 6.65
+  * d/patches: drop upstreamed patches
+  * d/rules: use DEB_HOST_ARCH_BITS for pointer size
+
+ -- Andrea Pappacoda <andrea@pappacoda.it>  Thu, 24 Nov 2022 16:23:34 +0100
+
+xbyak (6.64-2) unstable; urgency=medium
+
+  * d/patches: x32 support
+
+ -- Andrea Pappacoda <andrea@pappacoda.it>  Sun, 20 Nov 2022 15:26:15 +0100
+
+xbyak (6.64-1) unstable; urgency=medium
+
+  * New upstream version 6.64
+
+ -- Andrea Pappacoda <andrea@pappacoda.it>  Sun, 06 Nov 2022 22:04:09 +0100
+
+xbyak (6.63-1) unstable; urgency=medium
+
+  * New upstream version 6.63
+
+ -- Andrea Pappacoda <andrea@pappacoda.it>  Sun, 09 Oct 2022 13:16:09 +0200
+
+xbyak (6.62-1) unstable; urgency=medium
+
+  * New upstream version 6.62
+  * d/rules: use execute_after_*
+
+ -- Andrea Pappacoda <andrea@pappacoda.it>  Sat, 17 Sep 2022 14:10:45 +0200
+
+xbyak (6.61.2-1) unstable; urgency=medium
+
+  * New upstream version 6.61.2
+
+ -- Andrea Pappacoda <andrea@pappacoda.it>  Fri, 19 Aug 2022 00:56:44 +0200
+
+xbyak (6.60.2-1) unstable; urgency=medium
+
+  * New upstream version 6.60.2
+
+ -- Andrea Pappacoda <andrea@pappacoda.it>  Thu, 16 Jun 2022 23:30:22 +0200
+
 xbyak (6.052-1pexip3) pexip-bullseye; urgency=medium
 
   * Bullseye rebuild for ARM64 inclusion

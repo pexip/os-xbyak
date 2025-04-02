@@ -1,2 +1,6 @@
-Tests: pkgconfig
-Depends: @, g++ | c++-compiler, pkg-config
+Tests:
+ pkgconfig,
+Depends:
+ g++ | c++-compiler,
+ pkg-config,
+ @,

@@ -79,13 +79,12 @@ const uint64_t XMM = _XMM | _XMM2;
 const uint64_t YMM = _YMM | _YMM2;
 const uint64_t K = 1ULL << 43;
 const uint64_t _ZMM = 1ULL << 44;
-const uint64_t _ZMM2 = 1ULL << 45;
 #ifdef XBYAK64
+const uint64_t _ZMM2 = 1ULL << 45;
 const uint64_t ZMM = _ZMM | _ZMM2;
 const uint64_t _YMM3 = 1ULL << 46;
 #else
 const uint64_t ZMM = _ZMM;
-const uint64_t _YMM3 = 0;
 #endif
 const uint64_t K2 = 1ULL << 47;
 const uint64_t ZMM_SAE = 1ULL << 48;
@@ -98,10 +97,6 @@ const uint64_t XMM_SAE = 1ULL << 51;
 const uint64_t XMM_KZ = 1ULL << 52;
 const uint64_t YMM_KZ = 1ULL << 53;
 const uint64_t ZMM_KZ = 1ULL << 54;
-#else
-const uint64_t XMM_KZ = 0;
-const uint64_t YMM_KZ = 0;
-const uint64_t ZMM_KZ = 0;
 #endif
 const uint64_t MEM_K = 1ULL << 55;
 const uint64_t M_1to2 = 1ULL << 56;
@@ -558,6 +553,7 @@ class Test {
 			"wbinvd",
 			"wrmsr",
 			"xlatb",
+			"xend",
 
 			"popf",
 			"pushf",
@@ -1050,6 +1046,10 @@ class Test {
 			"nle",
 			"g",
 		};
+#if defined(__GNUC__) && !defined(__clang__)
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wformat-truncation" // wrong detection
+#endif
 		for (size_t i = 0; i < NUM_OF_ARRAY(tbl); i++) {
 			char buf[32];
 			snprintf(buf, sizeof(buf), "cmov%s", tbl[i]);
@@ -1059,6 +1059,9 @@ class Test {
 			snprintf(buf, sizeof(buf), "set%s", tbl[i]);
 			put(buf, REG8|REG8_3|MEM);
 		}
+#if defined(__GNUC__) && !defined(__clang__)
+	#pragma GCC diagnostic pop
+#endif
 	}
 	void putReg1() const
 	{
@@ -1091,6 +1094,7 @@ class Test {
 				put(p, REG64|RAX, "0x12345678", "0x12345678");
 				put(p, REG64|RAX, "192", "192");
 				put(p, REG64|RAX, "0x1234", "0x1234");
+				put(p, AX, "0x8000", "0x8000");
 				put(p, REG32|EAX, IMM8|IMM32|NEG8);
 				put(p, REG16|AX, IMM8|IMM16|NEG8|NEG16);
 				put(p, REG8|REG8_3|AL, IMM|NEG8);
@@ -1326,6 +1330,11 @@ class Test {
 #ifdef XBYAK64
 		put("cmpxchg16b", MEM);
 		put("fxrstor64", MEM);
+		put("xbegin", "0x12345678");
+		put("rdfsbase", REG32|REG64);
+		put("rdgsbase", REG32|REG64);
+		put("wrfsbase", REG32|REG64);
+		put("wrgsbase", REG32|REG64);
 #endif
 		{
 			const char tbl[][8] = {
@@ -1348,6 +1357,7 @@ class Test {
 		put("xchg", EAX|REG32, EAX|REG32|MEM);
 		put("xchg", MEM, EAX|REG32);
 		put("xchg", REG64, REG64|MEM);
+		put("xabort", IMM8);
 	}
 	void putShift() const
 	{
@@ -1493,18 +1503,6 @@ class Test {
 				put(p, XMM, XMM|MEM, IMM);
 			}
 		}
-		{
-			const char tbl[][16] = {
-				"pclmullqlqdq",
-				"pclmulhqlqdq",
-//				"pclmullqhdq", // QQQ : not supported by nasm/yasm
-//				"pclmulhqhdq",
-			};
-			for (size_t i = 0; i < NUM_OF_ARRAY(tbl); i++) {
-				const char *p = tbl[i];
-				put(p, XMM, XMM|MEM);
-			}
-		}
 		put("extractps", REG32e|MEM, XMM, IMM);
 		put("pextrw", REG32e|MEM, XMM, IMM); // pextrw for REG32 is for MMX2
 		put("pextrb", REG32e|MEM, XMM, IMM);
@@ -1521,6 +1519,23 @@ class Test {
 		put("pinsrq", XMM, REG64|MEM, IMM);
 #endif
 
+	}
+	void putVpclmulqdq()
+	{
+		const char tbl[][16] = {
+			"vpclmullqlqdq",
+			"vpclmulhqlqdq",
+			"vpclmullqhqdq",
+			"vpclmulhqhqdq",
+		};
+		for (size_t i = 0; i < NUM_OF_ARRAY(tbl); i++) {
+			const char *p = tbl[i] + 1; // remove the top 'v'
+			put(p, XMM, XMM|MEM);
+			p = tbl[i]; // use the top 'v'
+			put(p, XMM, XMM, XMM|MEM);
+			put(p, YMM, YMM, YMM|MEM);
+			put(p, ZMM, ZMM, ZMM|MEM);
+		}
 	}
 	void putSHA() const
 	{
@@ -2201,6 +2216,7 @@ class Test {
 			put("vcvtpd2ps", XMM, XMM | YMM | MEM);
 			put("vcvtpd2dq", XMM, XMM | YMM | MEM);
 			put("vcvttpd2dq", XMM, XMM | YMM | MEM);
+			put("vcvttpd2dq", YMM, MEM | ZMM_SAE);
 
 			put("vcvtph2ps", XMM | YMM, XMM | MEM);
 			put("vcvtps2ph", XMM | MEM, XMM | YMM, IMM8);
@@ -2569,6 +2585,7 @@ public:
 		putPushPop8_16();
 #else
 		putSIMPLE();
+		putVpclmulqdq();
 		putReg1();
 		putBt();
 		putRorM();
@@ -3369,6 +3386,8 @@ public:
 				}
 			}
 		}
+		put("vfmadd132pd", ZMM, ZMM, ZMM_ER);
+		put("vfmadd132ps", ZMM, ZMM, ZMM_ER);
 	}
 	void put512_Y_XM()
 	{
@@ -3442,6 +3461,11 @@ public:
 				put(p, _ZMM, _ZMM, mem);
 			}
 		}
+		put("vaddpd", ZMM, ZMM, ZMM_ER);
+		put("vmaxpd", ZMM, ZMM, ZMM_SAE);
+		put("vminps", ZMM, ZMM, ZMM_SAE);
+		put("vmaxsd", XMM, XMM, XMM_SAE);
+		put("vminss", XMM, XMM, XMM_SAE);
 #endif
 	}
 	void put512_cvt()
@@ -3458,6 +3482,10 @@ public:
 		put("vcvtpd2dq", XMM_KZ, _XMM | _YMM | M_1to2);
 		put("vcvtpd2dq", YMM_KZ, _ZMM | ZMM_ER | M_1to8);
 #endif
+	}
+	void put512_fp16()
+	{
+		put("vaddph", ZMM, ZMM, ZMM_ER);
 	}
 	void putMin()
 	{
@@ -3498,6 +3526,7 @@ public:
 		put512_AVX1();
 		separateFunc();
 		put512_cvt();
+		put512_fp16();
 #endif
 	}
 #endif

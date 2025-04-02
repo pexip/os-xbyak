@@ -10,11 +10,11 @@ export DEB_CXXFLAGS_MAINT_STRIP = -Werror=array-bounds
 ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
 
 execute_after_dh_auto_build-arch:
-	make -C sample BIT=$(DEB_HOST_ARCH_BITS)
-	make -C test BIT=$(DEB_HOST_ARCH_BITS)
+	make -C sample BIT=$(DEB_HOST_ARCH_BITS) CXX_32=i686-linux-gnu-g++ CXX_64=x86_64-linux-gnu-g++
+	make -C test BIT=$(DEB_HOST_ARCH_BITS) CXX_32=i686-linux-gnu-g++ CXX_64=x86_64-linux-gnu-g++
 
 execute_after_dh_auto_test:
-	make -C test BIT=$(DEB_HOST_ARCH_BITS) test
+	make -C test BIT=$(DEB_HOST_ARCH_BITS) CXX_32=i686-linux-gnu-g++ CXX_64=x86_64-linux-gnu-g++ test
 
 execute_after_dh_auto_clean:
 	make -C sample BIT=$(DEB_HOST_ARCH_BITS) clean

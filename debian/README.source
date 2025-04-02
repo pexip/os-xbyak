@@ -1,0 +1,12 @@
+This package follows the dgit-maint-gbp(7) workflow.
+
+New upstream releases are imported with `gbp import-orig --uscan`, so that the
+upstream code gets automatically cleaned up and repacked according to the
+Files-Excluded field in the debian/copyright file.
+
+This package also follows DEP-14, so you'll find what you'd expect in the
+debian/latest and upstream/latest branches.
+
+Lastly, a pristine-tar branch is maintained thanks to `gbp import-orig`.
+
+ -- Andrea Pappacoda <andrea@pappacoda.it>  Thu, 08 Aug 2024 18:43:41 +0200

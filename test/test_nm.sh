@@ -47,7 +47,7 @@ noexcept)
 	;;
 esac
 
-CFLAGS="-Wall -I../ $OPT2"
+CFLAGS="-Wall -g -I../ $OPT2"
 echo "compile make_nm.cpp with $CFLAGS"
 $CXX $CFLAGS make_nm.cpp -o make_nm
 
@@ -61,4 +61,4 @@ echo "xbyak"
 echo "compile nm_frame.cpp"
 $CXX $CFLAGS -DXBYAK_TEST nm_frame.cpp -o nm_frame
 ./nm_frame | $FILTER > x.lst
-diff -B ok.lst x.lst && echo "ok"
+diff -bB ok.lst x.lst && echo "ok"

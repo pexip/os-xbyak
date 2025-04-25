@@ -1,3 +1,11 @@
+xbyak (7.24.2-3) unstable; urgency=medium
+
+  * d/patches: update revert-strict-register-size-check.patch.
+    Also disable a ERR_BAD_SIZE_OF_REGISTER check, which causes runtime
+    failures in yuzu
+
+ -- Andrea Pappacoda <tachi@debian.org>  Sat, 26 Apr 2025 01:40:07 +0200
+
 xbyak (7.24.2-2) unstable; urgency=medium
 
   * d/patches: revert strict register size check (Closes: #1101630)

@@ -1,0 +1,114 @@
+Description: Use CXX_32 and CXX_64
+ This allows easily using a cross GCC toolchain instead of multilib.
+ See <https://lists.debian.org/msgid-search/20250316194848.GA2297362@subdivi.de>.
+Author: Andrea Pappacoda <andrea@pappacoda.it>
+Forwarded: https://github.com/herumi/xbyak/pull/205
+Last-Update: 2025-03-25
+
+--- xbyak-7.24.2.orig/sample/Makefile
++++ xbyak-7.24.2/sample/Makefile
+@@ -1,5 +1,7 @@
+ XBYAK_INC=../xbyak/xbyak.h
+ CXX?=g++
++CXX_32=$(CXX) -m32
++CXX_64=$(CXX) -m64
+ 
+ BOOST_EXIST=$(shell echo "#include <boost/spirit/core.hpp>" | $(CXX) -x c++ -c - 2>/dev/null && echo 1)
+ UNAME_M=$(shell uname -m)
+@@ -56,49 +58,49 @@ CFLAGS_WARN=-Wall -Wextra -Wformat=2 -Wc
+ CFLAGS=-g -O2 -fomit-frame-pointer -Wall -I../ $(CFLAGS_WARN) $(CXXFLAGS) $(CPPFLAGS) $(LDFLAGS)
+ 
+ test:
+-	$(CXX) $(CFLAGS) test0.cpp -o $@ -m32
++	$(CXX_32) $(CFLAGS) test0.cpp -o $@
+ 
+ quantize:
+-	$(CXX) $(CFLAGS) quantize.cpp -o $@ -m32
++	$(CXX_32) $(CFLAGS) quantize.cpp -o $@
+ 
+ calc:
+-	$(CXX) $(CFLAGS) calc.cpp -o $@ -m32
++	$(CXX_32) $(CFLAGS) calc.cpp -o $@
+ calc64:
+-	$(CXX) $(CFLAGS) calc.cpp -o $@ -m64
++	$(CXX_64) $(CFLAGS) calc.cpp -o $@
+ calc2:
+-	$(CXX) $(CFLAGS) calc2.cpp -o $@ -m32
++	$(CXX_32) $(CFLAGS) calc2.cpp -o $@
+ calc2_64:
+-	$(CXX) $(CFLAGS) calc2.cpp -o $@ -m64
++	$(CXX_64) $(CFLAGS) calc2.cpp -o $@
+ 
+ bf:
+-	$(CXX) $(CFLAGS) bf.cpp -o $@ -m32
++	$(CXX_32) $(CFLAGS) bf.cpp -o $@
+ bf64:
+-	$(CXX) $(CFLAGS) bf.cpp -o $@ -m64
++	$(CXX_64) $(CFLAGS) bf.cpp -o $@
+ 
+ memfunc:
+-	$(CXX) $(CFLAGS) memfunc.cpp -o $@ -m32
++	$(CXX_32) $(CFLAGS) memfunc.cpp -o $@
+ memfunc64:
+-	$(CXX) $(CFLAGS) memfunc.cpp -o $@ -m64
++	$(CXX_64) $(CFLAGS) memfunc.cpp -o $@
+ 
+ toyvm:
+-	$(CXX) $(CFLAGS) toyvm.cpp -o $@ -m32
++	$(CXX_32) $(CFLAGS) toyvm.cpp -o $@
+ 
+ test64:
+-	$(CXX) $(CFLAGS) test0.cpp -o $@ -m64
++	$(CXX_64) $(CFLAGS) test0.cpp -o $@
+ test_util:
+-	$(CXX) $(CFLAGS) test_util.cpp -o $@ -m32
++	$(CXX_32) $(CFLAGS) test_util.cpp -o $@
+ test_util64:
+-	$(CXX) $(CFLAGS) test_util.cpp -o $@ -m64
++	$(CXX_64) $(CFLAGS) test_util.cpp -o $@
+ static_buf:
+-	$(CXX) $(CFLAGS) static_buf.cpp -o $@ -m32
++	$(CXX_32) $(CFLAGS) static_buf.cpp -o $@
+ static_buf64:
+-	$(CXX) $(CFLAGS) static_buf.cpp -o $@ -m64
++	$(CXX_64) $(CFLAGS) static_buf.cpp -o $@
+ jmp_table:
+-	$(CXX) $(CFLAGS) jmp_table.cpp -o $@ -m32
++	$(CXX_32) $(CFLAGS) jmp_table.cpp -o $@
+ jmp_table64:
+-	$(CXX) $(CFLAGS) jmp_table.cpp -o $@ -m64
++	$(CXX_64) $(CFLAGS) jmp_table.cpp -o $@
+ memfd:
+-	$(CXX) $(CFLAGS) memfd.cpp -o $@ -m64
++	$(CXX_64) $(CFLAGS) memfd.cpp -o $@
+ profiler: profiler.cpp ../xbyak/xbyak_util.h
+ 	$(CXX) $(CFLAGS) profiler.cpp -o $@
+ profiler-vtune: profiler.cpp ../xbyak/xbyak_util.h
+--- xbyak-7.24.2.orig/test/Makefile
++++ xbyak-7.24.2/test/Makefile
+@@ -1,5 +1,7 @@
+ # To compile with -m32
+ # apt install g++-multilib
++CXX_32 = $(CXX) -m32
++CXX_64 = $(CXX) -m64
+ TARGET = make_nm normalize_prefix bad_address misc cvt_test cvt_test32 noexception misc32 detect_x32 avx10_test
+ XBYAK_INC=../xbyak/xbyak.h ../xbyak/xbyak_mnemonic.h ../xbyak/xbyak_util.h
+ UNAME_S=$(shell uname -s)
+@@ -39,13 +41,13 @@ normalize_prefix: normalize_prefix.cpp $
+ test_mmx: test_mmx.cpp $(XBYAK_INC)
+ 	$(CXX) $(CFLAGS) test_mmx.cpp -o $@ -lpthread
+ jmp: jmp.cpp $(XBYAK_INC)
+-	$(CXX) $(CFLAGS) $< -o $@ -m32
++	$(CXX_32) $(CFLAGS) $< -o $@
+ jmp64: jmp.cpp $(XBYAK_INC)
+-	$(CXX) $(CFLAGS) $< -o $@ -m64
++	$(CXX_64) $(CFLAGS) $< -o $@
+ address: address.cpp $(XBYAK_INC)
+-	$(CXX) $(CFLAGS) $< -o $@ -m32
++	$(CXX_32) $(CFLAGS) $< -o $@
+ address64: address.cpp $(XBYAK_INC)
+-	$(CXX) $(CFLAGS) $< -o $@ -m64
++	$(CXX_64) $(CFLAGS) $< -o $@
+ bad_address: bad_address.cpp $(XBYAK_INC)
+ 	$(CXX) $(CFLAGS) $< -o $@
+ misc: misc.cpp $(XBYAK_INC)

@@ -1,5 +1,36 @@
 # History
 
+* 2025/Mar/12 ver 7.24.2 fix. vcvtneps2bf16 should support AVX-NE-CONVERT (revert 749aa31)
+* 2025/Feb/26 ver 7.24.1 fix 3-op shift APX instructions with NDD format.
+* 2025/Feb/17 ver 7.24 feat: add error check for invalid REX prefix with AH/BH/CH/DH registers. enhance size mismatch detection for mem-reg operations like 'add eax, byte[rax]'
+* 2025/Feb/07 ver 7.23.1 revert the behavior of StackFrame::close().
+* 2025/Feb/03 ver 7.23 stricter checking of register size, improve handling of 16-bit immediates, change spec of StackFrame::close(), fix push/pop to support APX.
+* 2024/Nov/11 ver 7.22 add Reg::cvt{128,256,512}(). tested by xed 2024.11.04
+* 2024/Oct/31 ver 7.21 Enhance XMM register validation in SSE instructions
+* 2024/Oct/17 ver 7.20.1 Updated to comply with AVX10.2 specification rev 2.0
+* 2024/Oct/15 ver 7.20 Fixed the specification of setDefaultEncoding, setDefaultEncodingAVX10.
+* 2024/Oct/15 ver 7.11 Added full support for AVX10.2
+* 2024/Oct/13 ver 7.10 support AVX10 integer and fp16 vnni, media new instructions. setDefaultEncoding is extended.
+* 2024/Oct/10 ver 7.09.1 fix the names of vpcompressb and vpcompressw
+* 2024/Oct/08 ver 7.09 support YMM embedded rounding of AVX10.2 and fix some mnemonics with {sae}/{er}.
+* 2024/Oct/07 ver 7.08 support rdfsbase etc.
+* 2024/Aug/29 ver 7.07.1 adapt to NASM 2.16.03 output of xchg (The functionality stays the same.)
+* 2024/Jun/11 ver 7.07 support xresldtrk/xsusldtrk
+* 2024/Mar/07 ver 7.06 Xbyak::util::Cpu supports AMD processor
+* 2024/Feb/11 ver 7.05.1 fix extractBit() in util::Cpu and align() for autoGrow mode
+* 2024/Jan/03 ver 7.05 support RAO-INT for APX
+* 2023/Dec/28 ver 7.04 rex2 supports two-byte opecode
+* 2023/Dec/26 ver 7.03 set the default value of dfv to 0
+* 2023/Dec/20 ver 7.02 SHA* support APX
+* 2023/Dec/19 ver 7.01 support AESKLE, WIDE_KL, KEYLOCKER, KEYLOCKER_WIDE, detection of APX10/APX
+* 2023/Dec/01 ver 7.00 support APX
+* 2023/Aug/07 ver 6.73 add sha512/sm3/sm4/avx-vnni-int16
+* 2023/Aug/02 ver 6.72 add xbegin/xabort/xend
+* 2023/Jul/27 ver 6.71 Allocator supports huge page
+* 2023/Jul/05 ver 6.70 add alias of vclmulqdq, correct alias of pclmulqdq
+* 2023/Jun/27 ver 6.69.2 add constexpr to `TypeT operator|` (thanks to Wunkolo)
+* 2023/Mar/23 ver 6.69.1 add detection of xsave (thanks to Wunkolo)
+* 2023/Feb/20 ver 6.69 util::Cpu supports AMD CPUs. support UINTR
 * 2022/Dec/07 ver 6.68 support prefetchit{0,1}
 * 2022/Nov/30 ver 6.67 support CMPccXADD
 * 2022/Nov/25 ver 6.66 support RAO-INT

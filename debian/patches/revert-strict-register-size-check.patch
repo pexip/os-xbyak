@@ -3,14 +3,17 @@ Author: Andrea Pappacoda <tachi@debian.org>
 Bug: https://github.com/herumi/xbyak/issues/206
 Bug-Debian: https://bugs.debian.org/1101630
 Forwarded: not-needed
-Last-Update: 2025-04-02
+Last-Update: 2025-04-25
 
 --- xbyak-7.24.2.orig/test/misc.cpp
 +++ xbyak-7.24.2/test/misc.cpp
-@@ -135,10 +135,7 @@ CYBOZU_TEST_AUTO(mov_const)
- 			CYBOZU_TEST_EXCEPTION(mov(cx, al), Xbyak::Error);
- 			CYBOZU_TEST_EXCEPTION(mov(al, cx), Xbyak::Error);
- 			CYBOZU_TEST_EXCEPTION(mov(eax, cx), Xbyak::Error);
+@@ -132,13 +132,7 @@ CYBOZU_TEST_AUTO(mov_const)
+ 					CYBOZU_TEST_NO_EXCEPTION(mov(af[eax], v));
+ 				}
+ 			}
+-			CYBOZU_TEST_EXCEPTION(mov(cx, al), Xbyak::Error);
+-			CYBOZU_TEST_EXCEPTION(mov(al, cx), Xbyak::Error);
+-			CYBOZU_TEST_EXCEPTION(mov(eax, cx), Xbyak::Error);
 -			CYBOZU_TEST_EXCEPTION(mov(eax, byte[eax]), Xbyak::Error);
 -			CYBOZU_TEST_EXCEPTION(mov(word[eax], al), Xbyak::Error);
  #ifdef XBYAK64
@@ -18,9 +21,26 @@ Last-Update: 2025-04-02
  			CYBOZU_TEST_NO_EXCEPTION(mov(rax, ptr[(void*)0x7fffffff]));
  			for (int i = 4; i < 8; i++) {
  				CYBOZU_TEST_EXCEPTION(add(ah, Reg8(i, true)), Xbyak::Error);
+@@ -148,8 +142,6 @@ CYBOZU_TEST_AUTO(mov_const)
+ 				CYBOZU_TEST_EXCEPTION(add(ah, Reg8(i)), Xbyak::Error);
+ 				CYBOZU_TEST_EXCEPTION(add(Reg8(i), dh), Xbyak::Error);
+ 			}
+-			CYBOZU_TEST_EXCEPTION(mov(ah, cx), Xbyak::Error);
+-			CYBOZU_TEST_EXCEPTION(mov(al, cx), Xbyak::Error);
+ 			if (sizeof(void*) != 4) { // sizeof(void*) == 4 on x32
+ 				CYBOZU_TEST_EXCEPTION(mov(rax, ptr[(void*)0x17fffffff]), Xbyak::Error);
+ 			}
 --- xbyak-7.24.2.orig/xbyak/xbyak.h
 +++ xbyak-7.24.2/xbyak/xbyak.h
-@@ -2097,7 +2097,6 @@ private:
+@@ -2086,7 +2086,6 @@ private:
+ 	}
+ 	void opRR(const Reg& r1, const Reg& r2, uint64_t type, int code)
+ 	{
+-		if (!(type & T_ALLOW_DIFF_SIZE) && r1.isREG() && r2.isREG() && r1.getBit() != r2.getBit()) XBYAK_THROW(ERR_BAD_SIZE_OF_REGISTER)
+ 		if (!(type & T_ALLOW_ABCDH) && (isBadCombination(r1, r2) || isBadCombination(r2, r1))) XBYAK_THROW(ERR_CANT_USE_ABCDH)
+ 		bool rex2 = rex(r2, r1, type);
+ 		writeCode(type, r1, code, rex2);
+@@ -2097,7 +2096,6 @@ private:
  		if (code2 == NONE) code2 = code;
  		if (type2 && opROO(Reg(), addr, r, type2, code2)) return;
  		if (addr.is64bitDisp()) XBYAK_THROW(ERR_CANT_USE_64BIT_DISP)
